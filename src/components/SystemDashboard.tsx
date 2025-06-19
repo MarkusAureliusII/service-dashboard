@@ -27,21 +27,26 @@ const SystemDashboard: React.FC = () => {
 
   // Configuration from environment variables
   const baseUrl = import.meta.env.VITE_PUBLIC_BASE_URL || 'http://localhost';
+  const supabaseExternalAvailable = import.meta.env.VITE_SUPABASE_EXTERNAL_AVAILABLE !== 'false';
+  
   const services = {
     n8n: {
       url: `${baseUrl}:${import.meta.env.VITE_N8N_PORT || '5678'}`,
       healthUrl: import.meta.env.VITE_N8N_HEALTH_URL || 'http://localhost:5678',
-      name: 'n8n Automation'
+      name: 'n8n Automation',
+      externallyAvailable: true
     },
     supabase: {
       url: `${baseUrl}:${import.meta.env.VITE_SUPABASE_PORT || '8000'}`,
       healthUrl: import.meta.env.VITE_SUPABASE_HEALTH_URL || 'http://localhost:54323',
-      name: 'Supabase Datenbank'
+      name: 'Supabase Datenbank',
+      externallyAvailable: supabaseExternalAvailable
     },
     openWebUI: {
       url: `${baseUrl}:${import.meta.env.VITE_OPEN_WEBUI_PORT || '3000'}`,
       healthUrl: import.meta.env.VITE_OPEN_WEBUI_HEALTH_URL || 'http://localhost:3000',
-      name: 'Open Web UI'
+      name: 'Open Web UI',
+      externallyAvailable: true
     }
   };
 
@@ -187,14 +192,26 @@ const SystemDashboard: React.FC = () => {
               )}
             </div>
             
-            <Button 
-              onClick={() => openInNewTab(services.supabase.url)}
-              className="w-full"
-              variant="default"
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Supabase öffnen
-            </Button>
+            {services.supabase.externallyAvailable ? (
+              <Button 
+                onClick={() => openInNewTab(services.supabase.url)}
+                className="w-full"
+                variant="default"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Supabase öffnen
+              </Button>
+            ) : (
+              <div className="w-full p-3 bg-amber-50 border border-amber-200 rounded-md">
+                <div className="flex items-center gap-2 text-amber-800">
+                  <Database className="h-4 w-4" />
+                  <span className="text-sm font-medium">Nur intern verfügbar</span>
+                </div>
+                <p className="text-xs text-amber-700 mt-1">
+                  Supabase läuft nur Docker-intern und ist nicht extern erreichbar.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

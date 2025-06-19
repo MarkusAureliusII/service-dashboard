@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_N8N_HEALTH_URL: string
   readonly VITE_SUPABASE_HEALTH_URL: string
   readonly VITE_OPEN_WEBUI_HEALTH_URL: string
+  readonly VITE_SUPABASE_EXTERNAL_AVAILABLE: string
 }
 
 interface ImportMeta {
