@@ -10,57 +10,83 @@ interface ServiceStatus {
 }
 
 const SystemDashboard: React.FC = () => {
+  const [n8nStatus, setN8nStatus] = useState<ServiceStatus>({
+    isOnline: false,
+    isLoading: true
+  });
+  
+  const [supabaseStatus, setSupabaseStatus] = useState<ServiceStatus>({
+    isOnline: false,
+    isLoading: true
+  });
+  
   const [openWebUIStatus, setOpenWebUIStatus] = useState<ServiceStatus>({
     isOnline: false,
     isLoading: true
   });
 
-  // Configuration - these should be environment variables in a real application
+  // Configuration from environment variables
+  const baseUrl = import.meta.env.VITE_PUBLIC_BASE_URL || 'http://localhost';
   const services = {
     n8n: {
-      url: import.meta.env.VITE_N8N_URL || 'http://localhost:5678',
+      url: `${baseUrl}:${import.meta.env.VITE_N8N_PORT || '5678'}`,
+      healthUrl: import.meta.env.VITE_N8N_HEALTH_URL || 'http://localhost:5678',
       name: 'n8n Automation'
     },
     supabase: {
-      url: import.meta.env.VITE_SUPABASE_URL || 'http://localhost:54323',
+      url: `${baseUrl}:${import.meta.env.VITE_SUPABASE_PORT || '8000'}`,
+      healthUrl: import.meta.env.VITE_SUPABASE_HEALTH_URL || 'http://localhost:54323',
       name: 'Supabase Datenbank'
     },
     openWebUI: {
-      url: import.meta.env.VITE_OPEN_WEBUI_URL || 'http://localhost:3000',
+      url: `${baseUrl}:${import.meta.env.VITE_OPEN_WEBUI_PORT || '3000'}`,
+      healthUrl: import.meta.env.VITE_OPEN_WEBUI_HEALTH_URL || 'http://localhost:3000',
       name: 'Open Web UI'
     }
   };
 
-  // Health check for Open Web UI
-  useEffect(() => {
-    const checkOpenWebUIHealth = async () => {
-      try {
-        setOpenWebUIStatus(prev => ({ ...prev, isLoading: true }));
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        const response = await fetch(`${services.openWebUI.url}/health`, {
-          method: 'GET',
-          signal: controller.signal,
-        });
-        
-        clearTimeout(timeoutId);
-        
-        setOpenWebUIStatus({
-          isOnline: response.status === 200,
-          isLoading: false
-        });
-      } catch (error) {
-        setOpenWebUIStatus({
-          isOnline: false,
-          isLoading: false
-        });
-      }
-    };
+  // Health check functions
+  const checkServiceHealth = async (
+    healthUrl: string, 
+    setStatus: React.Dispatch<React.SetStateAction<ServiceStatus>>,
+    endpoint: string = ''
+  ) => {
+    try {
+      setStatus(prev => ({ ...prev, isLoading: true }));
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(`${healthUrl}${endpoint}`, {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      setStatus({
+        isOnline: response.status === 200,
+        isLoading: false
+      });
+    } catch (error) {
+      setStatus({
+        isOnline: false,
+        isLoading: false
+      });
+    }
+  };
 
-    checkOpenWebUIHealth();
-  }, [services.openWebUI.url]);
+  // Health checks for all services
+  useEffect(() => {
+    // n8n health check
+    checkServiceHealth(services.n8n.healthUrl, setN8nStatus, '/healthz');
+    
+    // Supabase health check 
+    checkServiceHealth(services.supabase.healthUrl, setSupabaseStatus, '/health');
+    
+    // OpenWebUI health check
+    checkServiceHealth(services.openWebUI.healthUrl, setOpenWebUIStatus, '/health');
+  }, []);
 
   const openInNewTab = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -85,7 +111,33 @@ const SystemDashboard: React.FC = () => {
               Workflow-Automatisierung und Daten-Pipelines.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Status:</span>
+              {n8nStatus.isLoading ? (
+                <Badge variant="secondary">
+                  Prüfe...
+                </Badge>
+              ) : (
+                <Badge 
+                  variant={n8nStatus.isOnline ? "default" : "destructive"}
+                  className={n8nStatus.isOnline ? "bg-green-600 hover:bg-green-700" : ""}
+                >
+                  {n8nStatus.isOnline ? (
+                    <>
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Online
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Offline
+                    </>
+                  )}
+                </Badge>
+              )}
+            </div>
+            
             <Button 
               onClick={() => openInNewTab(services.n8n.url)}
               className="w-full"
@@ -108,7 +160,33 @@ const SystemDashboard: React.FC = () => {
               Zentrale Datenverwaltung und Backend.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Status:</span>
+              {supabaseStatus.isLoading ? (
+                <Badge variant="secondary">
+                  Prüfe...
+                </Badge>
+              ) : (
+                <Badge 
+                  variant={supabaseStatus.isOnline ? "default" : "destructive"}
+                  className={supabaseStatus.isOnline ? "bg-green-600 hover:bg-green-700" : ""}
+                >
+                  {supabaseStatus.isOnline ? (
+                    <>
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Online
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Offline
+                    </>
+                  )}
+                </Badge>
+              )}
+            </div>
+            
             <Button 
               onClick={() => openInNewTab(services.supabase.url)}
               className="w-full"
@@ -162,7 +240,6 @@ const SystemDashboard: React.FC = () => {
               onClick={() => openInNewTab(services.openWebUI.url)}
               className="w-full"
               variant="default"
-              disabled={!openWebUIStatus.isOnline}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Open Web UI öffnen
