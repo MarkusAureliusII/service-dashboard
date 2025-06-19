@@ -37,13 +37,13 @@ const SystemDashboard: React.FC = () => {
       externallyAvailable: true
     },
     supabase: {
-      url: `${baseUrl}:${import.meta.env.VITE_SUPABASE_PORT || '8000'}`,
+      url: import.meta.env.VITE_SUPABASE_STUDIO_URL || `${baseUrl}:${import.meta.env.VITE_SUPABASE_PORT || '8000'}`,
       healthUrl: import.meta.env.VITE_SUPABASE_HEALTH_URL || 'http://localhost:54323',
       name: 'Supabase Datenbank',
       externallyAvailable: supabaseExternalAvailable
     },
     openWebUI: {
-      url: `${baseUrl}:${import.meta.env.VITE_OPEN_WEBUI_PORT || '3000'}`,
+      url: import.meta.env.VITE_OPEN_WEBUI_URL || `${baseUrl}:${import.meta.env.VITE_OPEN_WEBUI_PORT || '3000'}`,
       healthUrl: import.meta.env.VITE_OPEN_WEBUI_HEALTH_URL || 'http://localhost:3000',
       name: 'Open Web UI',
       externallyAvailable: true
@@ -192,26 +192,14 @@ const SystemDashboard: React.FC = () => {
               )}
             </div>
             
-            {services.supabase.externallyAvailable ? (
-              <Button 
-                onClick={() => openInNewTab(services.supabase.url)}
-                className="w-full"
-                variant="default"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Supabase öffnen
-              </Button>
-            ) : (
-              <div className="w-full p-3 bg-amber-50 border border-amber-200 rounded-md">
-                <div className="flex items-center gap-2 text-amber-800">
-                  <Database className="h-4 w-4" />
-                  <span className="text-sm font-medium">Nur intern verfügbar</span>
-                </div>
-                <p className="text-xs text-amber-700 mt-1">
-                  Supabase läuft nur Docker-intern und ist nicht extern erreichbar.
-                </p>
-              </div>
-            )}
+            <Button 
+              onClick={() => openInNewTab(services.supabase.url)}
+              className="w-full"
+              variant="default"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Supabase öffnen
+            </Button>
           </CardContent>
         </Card>
 

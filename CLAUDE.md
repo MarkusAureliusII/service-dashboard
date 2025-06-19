@@ -139,3 +139,9 @@ Essential environment variables to configure:
 - `SUPABASE_ANON_KEY` - Supabase anonymous key
 - `OLLAMA_BASE_URL` - Usually http://localhost:11434
 - `N8N_WEBHOOK_URL` - For webhook integrations
+```
+
+## Security Notes
+
+- Always check VPS host directly
+  - überprüfe nie die local hosts sondern immer direkt den VPS Host 217.154.225.184
